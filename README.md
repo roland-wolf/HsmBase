@@ -27,9 +27,9 @@ Currently there is no documentation but a tiny example.
 
 The general usage is simple: Copy the file hsmbase.h to your project. Derive a class from stm::HsmBase which needs two template parameters. The first template parameter is the derived class (google for CRTP if this feels odd to you), the second parameter ist your event type. Then write a method for every leaf state and compound state. Every method contains code for entry/exit actions if needed, a call to transition() to change state and an action which is associated with the transition. Specify the hierarchy of states and the start state in the constructor. Call start on the state machine and feed events into the state machine.
 
-Todo
+TODO
 
 - write documentation
 - add asserts to give textual feedback instead of crashes for misconfigured state machines
 - permit query of current state
--  
+
