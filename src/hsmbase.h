@@ -26,8 +26,8 @@ DEALINGS IN THE SOFTWARE.
 
 
 
-#ifndef STATEMACHINE_H
-#define STATEMACHINE_H
+#ifndef HSMBASE_H
+#define HSMBASE_H
 
 namespace stm
 {
@@ -49,10 +49,10 @@ struct DefaultConfig
 * Use this class with CRTP: class MyStateMachine : public StateProcessor<MyStateMachine, Event>
 */
 template <typename Derived, typename EventType , typename ArraySize = DefaultConfig>
-class StateProcessor
+class HsmBase
 {
 public:
-    StateProcessor()
+    HsmBase()
         : m_nextIndex(2)  //2 places reserved for root and superroot
         , m_reason(INIT)
         , m_transitionSeen(false)
@@ -66,7 +66,7 @@ public:
 
     }
 
-    virtual ~StateProcessor(){}
+    virtual ~HsmBase(){}
 
     typedef void(Derived::*DerivedMethod)(const EventType *);
 
@@ -244,7 +244,7 @@ private:
 //---------------------------implementation-------------------------
 
 template <typename Derived, typename EventType, typename ArraySize>
-int StateProcessor<Derived, EventType, ArraySize>::find(DerivedMethod method){
+int HsmBase<Derived, EventType, ArraySize>::find(DerivedMethod method){
 
     bool found = false;
     for(int i=0; i< m_nextIndex; i++)
@@ -258,7 +258,7 @@ int StateProcessor<Derived, EventType, ArraySize>::find(DerivedMethod method){
 }
 
 template <typename Derived, typename EventType, typename ArraySize>
-void StateProcessor<Derived, EventType, ArraySize>::writeInitTrace(int root, int target)
+void HsmBase<Derived, EventType, ArraySize>::writeInitTrace(int root, int target)
 {
     m_initNodes.clear();
     while(root != target){
@@ -268,7 +268,7 @@ void StateProcessor<Derived, EventType, ArraySize>::writeInitTrace(int root, int
 }
 
 template <typename Derived, typename EventType, typename ArraySize>
-void StateProcessor<Derived, EventType, ArraySize>::writeTrace(DerivedMethod targetState)  //from current State to top
+void HsmBase<Derived, EventType, ArraySize>::writeTrace(DerivedMethod targetState)  //from current State to top
 {
     m_up.nextIndex = 0;
     m_down.nextIndex = 0;
@@ -344,7 +344,7 @@ void StateProcessor<Derived, EventType, ArraySize>::writeTrace(DerivedMethod tar
 
 
 template <typename Derived, typename EventType, typename ArraySize>
-bool StateProcessor<Derived, EventType, ArraySize>::addChildState(DerivedMethod parentMeth, DerivedMethod child)
+bool HsmBase<Derived, EventType, ArraySize>::addChildState(DerivedMethod parentMeth, DerivedMethod child)
 {
     if(m_nextIndex > ArraySize::ENTRIES){
         DefaultConfig::assertFunc();
@@ -365,7 +365,7 @@ bool StateProcessor<Derived, EventType, ArraySize>::addChildState(DerivedMethod 
 }
 
 template <typename Derived, typename EventType, typename ArraySize>
-void StateProcessor<Derived, EventType, ArraySize>::processEvent(const EventType *event)
+void HsmBase<Derived, EventType, ArraySize>::processEvent(const EventType *event)
 {
     if(!m_started){
         return;
@@ -407,7 +407,7 @@ void StateProcessor<Derived, EventType, ArraySize>::processEvent(const EventType
 }
 
 template <typename Derived, typename EventType, typename ArraySize>
-void StateProcessor<Derived, EventType, ArraySize>::processInits(Node *node, const EventType *event)
+void HsmBase<Derived, EventType, ArraySize>::processInits(Node *node, const EventType *event)
 {
 
     while(node->initTarget !=0){
@@ -425,4 +425,4 @@ void StateProcessor<Derived, EventType, ArraySize>::processInits(Node *node, con
 
 } //namespace stm
 
-#endif // STATEMACHINE_H
+#endif // HSMBASE_H

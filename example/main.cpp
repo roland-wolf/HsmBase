@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../src/stateprocessor.h"
+#include "../src/hsmbase.h"
 
 
 using namespace std;
@@ -10,7 +10,7 @@ enum Event {
     Connect, Disconnect, SessionReceived, SessionLost
 };
 
-class Stm : public stm::StateProcessor<Stm, Event>
+class Stm : public stm::HsmBase<Stm, Event>
 {
 public:
     Stm();
