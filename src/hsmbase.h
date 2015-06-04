@@ -61,9 +61,7 @@ public:
         , m_started(false)
     {
         m_nodes[1].hierarchy=0;
-
         m_derivedThis = static_cast<Derived *>(this);
-
     }
 
     virtual ~HsmBase(){}
@@ -85,117 +83,31 @@ public:
 
     void processEvent(const EventType *event);
     void writeTrace(DerivedMethod targetState);  //from current State to target Trace
+    void start();
+    void setRoot(DerivedMethod meth);
+    int stateId(){return m_state;}
+
+    void initStatemachine(DerivedMethod target, DerivedMethod initialMethod =0);
 
 
-    void start()
-    {
-        if(!m_rootSet){
-            return;
-        }
-        m_started = true;
-        EventType event;  //serves as dummy argument
-        Node &superRoot = m_nodes[0];
-        //superRoot.derived Method always != 0, either user supplied or dummyMethod
-        m_callNode = &m_nodes[0];
+    void terminate(){  m_started= false;  }
 
-        processInits(&superRoot, &event);
-    }
+    void dummy(const EventType *ev){}
 
-
-    void setRoot(DerivedMethod meth)
-    {
-        m_nodes[1].derivedMeth=meth;
-        m_rootSet=true;
-    }
-
-    void initStatemachine(DerivedMethod target, DerivedMethod initialMethod =0)
-    {
-        m_state=methodToIndex(target);
-        Node &superRoot = m_nodes[0];
-        m_nodes[1].parent = &m_nodes[0];
-        superRoot.initTarget = &m_nodes[m_state] ;
-        if(initialMethod ==0){
-            superRoot.derivedMeth = &Derived::dummy;
-        }else{
-            superRoot.derivedMeth = initialMethod;
-        }
-    }
-
-
-    void terminate(){
-        m_started= false;
-    }
-
-    void dummy(const EventType *ev)
-    {
-    }
-
-    bool addInit(DerivedMethod meth, DerivedMethod target)
-    {
-        int index = find(meth);
-        int targetIndex = find(target);
-        if( (index >=0) && (targetIndex >=0)){
-            m_nodes[index].initTarget = &m_nodes[targetIndex];
-            return true;
-        }
-        return false;
-    }
-
-    int methodToIndex(DerivedMethod meth)
-    {
-        for(int i=0; i< m_nextIndex; i++){
-            if(m_nodes[i].derivedMeth == meth){
-                return i;
-            }
-        }
-        DefaultConfig::assertFunc();   //initial state was not registered
-        return -1;
-    }
-
-
-    bool addChildState(DerivedMethod parentMeth, DerivedMethod child);
-
-
-
-
+    bool addInit(DerivedMethod meth, DerivedMethod target);
+    int methodToIndex(DerivedMethod meth);
+    int addChildState(DerivedMethod parentMeth, DerivedMethod child);
 
 protected:
-
-    const Reason reason()
-    {
-        return m_reason;
-    }
-
-
-    void transition(DerivedMethod meth)
-    {
-        m_transitionSeen = true;
-        int targetState = methodToIndex(meth);
-        writeTrace(meth);
-        m_state = targetState;
-    }
-
-
-    void handled()
-    {
-        m_handled = true;
-    }
-
-
+    const Reason reason()  {   return m_reason;  }
+    void transition(DerivedMethod meth);
+    void handled()    {  m_handled = true;  }
 
 private:
 
     void writeInitTrace(int root, int target);
     void processInits(Node *node, const EventType *event);
-
-    void callInits(Node *currentNode, const EventType *ev)
-    {
-        m_reason = INIT;
-        while(currentNode->initTarget !=0){
-            (currentNode->derivedMeth)(ev);
-            currentNode=currentNode->initTarget;
-        }
-    }
+    void callInits(Node *currentNode, const EventType *ev);
 
     struct Nodes{
         int nodes[ArraySize::MAXDEPTH];
@@ -242,6 +154,92 @@ private:
 
 
 //---------------------------implementation-------------------------
+//------------------------------------------------------------------
+
+template <typename Derived, typename EventType, typename ArraySize>
+void HsmBase<Derived, EventType, ArraySize>::callInits(Node *currentNode, const EventType *ev)
+{
+    m_reason = INIT;
+    while(currentNode->initTarget !=0){
+        (currentNode->derivedMeth)(ev);
+        currentNode=currentNode->initTarget;
+    }
+}
+
+
+template <typename Derived, typename EventType, typename ArraySize>
+void HsmBase<Derived, EventType, ArraySize>::transition(DerivedMethod meth)
+{
+    m_transitionSeen = true;
+    int targetState = methodToIndex(meth);
+    writeTrace(meth);
+    m_state = targetState;
+}
+
+
+
+template <typename Derived, typename EventType, typename ArraySize>
+void HsmBase<Derived, EventType, ArraySize>::setRoot(DerivedMethod meth)
+{
+    m_nodes[1].derivedMeth=meth;
+    m_rootSet=true;
+}
+
+
+template <typename Derived, typename EventType, typename ArraySize>
+bool HsmBase<Derived, EventType, ArraySize>::addInit(DerivedMethod meth, DerivedMethod target)
+{
+    int index = find(meth);
+    int targetIndex = find(target);
+    if( (index >=0) && (targetIndex >=0)){
+        m_nodes[index].initTarget = &m_nodes[targetIndex];
+        return true;
+    }
+    return false;
+}
+
+template <typename Derived, typename EventType, typename ArraySize>
+int HsmBase<Derived, EventType, ArraySize>::methodToIndex(DerivedMethod meth)
+{
+    for(int i=0; i< m_nextIndex; i++){
+        if(m_nodes[i].derivedMeth == meth){
+            return i;
+        }
+    }
+    DefaultConfig::assertFunc();   //initial state was not registered
+    return -1;
+}
+
+
+template <typename Derived, typename EventType, typename ArraySize>
+void HsmBase<Derived, EventType, ArraySize>::initStatemachine(DerivedMethod target, DerivedMethod initialMethod)
+{
+    m_state=methodToIndex(target);
+    Node &superRoot = m_nodes[0];
+    m_nodes[1].parent = &m_nodes[0];
+    superRoot.initTarget = &m_nodes[m_state] ;
+    if(initialMethod ==0){
+        superRoot.derivedMeth = &Derived::dummy;
+    }else{
+        superRoot.derivedMeth = initialMethod;
+    }
+}
+
+
+template <typename Derived, typename EventType, typename ArraySize>
+void HsmBase<Derived, EventType, ArraySize>::start()
+{
+    if(!m_rootSet){
+        return;
+    }
+    m_started = true;
+    EventType event;  //serves as dummy argument
+    Node &superRoot = m_nodes[0];
+    //superRoot.derived Method always != 0, either user supplied or dummyMethod
+    m_callNode = &m_nodes[0];
+    processInits(&superRoot, &event);
+}
+
 
 template <typename Derived, typename EventType, typename ArraySize>
 int HsmBase<Derived, EventType, ArraySize>::find(DerivedMethod method){
@@ -344,7 +342,7 @@ void HsmBase<Derived, EventType, ArraySize>::writeTrace(DerivedMethod targetStat
 
 
 template <typename Derived, typename EventType, typename ArraySize>
-bool HsmBase<Derived, EventType, ArraySize>::addChildState(DerivedMethod parentMeth, DerivedMethod child)
+int HsmBase<Derived, EventType, ArraySize>::addChildState(DerivedMethod parentMeth, DerivedMethod child)
 {
     if(m_nextIndex > ArraySize::ENTRIES){
         DefaultConfig::assertFunc();
@@ -352,16 +350,21 @@ bool HsmBase<Derived, EventType, ArraySize>::addChildState(DerivedMethod parentM
     }
     ///@TODO ASSERT on duplicate calls
     int i =0;
-    for(int i=0; i< m_nextIndex; i++){
+    bool success= false;
+    for(; i< m_nextIndex; i++){
         if(m_nodes[i].derivedMeth == parentMeth){
             m_nodes[m_nextIndex].derivedMeth= child;
             m_nodes[m_nextIndex].parent = &m_nodes[i];
             m_nodes[m_nextIndex].hierarchy = m_nodes[i].hierarchy+1;
             m_nextIndex++;
+            success = true;
             break;
         }
     }
-    return true;
+    if(success){
+        return i;
+    }
+    return -1;
 }
 
 template <typename Derived, typename EventType, typename ArraySize>
@@ -409,7 +412,6 @@ void HsmBase<Derived, EventType, ArraySize>::processEvent(const EventType *event
 template <typename Derived, typename EventType, typename ArraySize>
 void HsmBase<Derived, EventType, ArraySize>::processInits(Node *node, const EventType *event)
 {
-
     while(node->initTarget !=0){
         m_reason= INIT;
         (m_derivedThis->*(node->derivedMeth))(event);

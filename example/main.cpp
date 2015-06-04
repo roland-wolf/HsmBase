@@ -16,7 +16,7 @@ public:
     Stm();
 
 private:
-    void init(const Event *ev);
+    void init(const Event *ev);     //Initial transition
     void root(const Event *ev){}
     void connected(const Event *ev);
     void disconnected(const Event *ev);
