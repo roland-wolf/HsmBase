@@ -31,6 +31,6 @@ TODO
 
 - Write documentation
 - Add asserts to give textual feedback instead of crashes for misconfigured state machines
-- Permit query of current state
+
 
 

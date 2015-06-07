@@ -356,13 +356,14 @@ int HsmBase<Derived, EventType, ArraySize>::addChildState(DerivedMethod parentMe
             m_nodes[m_nextIndex].derivedMeth= child;
             m_nodes[m_nextIndex].parent = &m_nodes[i];
             m_nodes[m_nextIndex].hierarchy = m_nodes[i].hierarchy+1;
-            m_nextIndex++;
             success = true;
             break;
         }
     }
     if(success){
-        return i;
+        int stateId = m_nextIndex;
+        m_nextIndex++;
+        return stateId;
     }
     return -1;
 }
