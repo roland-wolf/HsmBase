@@ -55,6 +55,8 @@ void Stm::connected(const Event *ev)
         cout << "connected Route" << endl;
         if( *ev == Disconnect){
             transition(&Stm::disconnected);
+        }else if(*ev==SessionReceived){
+            transition(&Stm::hasSession);
         }
         break;
     default:
@@ -90,18 +92,44 @@ void Stm::disconnected(const Event *ev)
 
 void Stm::hasSession(const Event *ev)
 {
-    if( *ev == Connect){
-        transition(&Stm::disconnected);
+
+    switch(reason()){
+    case Stm::ENTRY:
+        cout << "hasSession Entry" << endl;
+        break;
+    case Stm::EXIT:
+        cout << "hasSession Exit" << endl;
+        break;
+    case Stm::INIT:
+        cout << "hasSession init" << endl;
+        break;
+    case Stm::ACTION:
+        cout << "hasSession action" << endl;
+        break;
+    case Stm::ROUTE:
+        cout << "hasSession Route" << endl;
+        if( *ev == SessionLost){
+            transition(&Stm::connected);
+        }
+        break;
+    default:
+        break;
     }
+
 }
 
 int main()
 {
     Stm sm;
     Event evConnect = Connect;
+    Event evDisconnect = Disconnect;
+    Event evSessionReceived = SessionReceived;
+    Event evSessionLost = SessionLost;
     sm.start();
     sm.processEvent(&evConnect);
-    Event evDisconnect = Disconnect;
+    sm.processEvent(&evSessionReceived);
+    sm.processEvent(&evSessionLost);
+    sm.processEvent(&evSessionReceived);
     sm.processEvent(&evDisconnect);
     sm.processEvent(&evDisconnect);
     return 0;

@@ -60,7 +60,8 @@ public:
         , m_state(0)
         , m_started(false)
     {
-        m_nodes[1].hierarchy=0;
+        m_nodes[0].hierarchy=-1;  //super root
+        m_nodes[1].hierarchy=0;   //root
         m_derivedThis = static_cast<Derived *>(this);
     }
 
@@ -72,8 +73,21 @@ public:
 
     class Node {
     public:
-        Node(DerivedMethod derivedMeth_): derivedMeth(derivedMeth_), initTarget(0) {}
-        Node(): derivedMeth(0), initTarget(0) { }
+        Node(DerivedMethod derivedMeth_)
+            : parent(0)
+            , hierarchy(0)
+            , derivedMeth(derivedMeth_)
+            , initTarget(0)
+        {
+        }
+
+        Node()
+            : parent(0)
+            , hierarchy(0)
+            , derivedMeth(0)
+            , initTarget(0)
+        {
+        }
 
         Node *parent;
         int hierarchy;

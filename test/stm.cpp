@@ -1,7 +1,7 @@
 #include <iostream>
 #include "stm.h"
 
-//Implementation of state machine published in
+//Implementation of the state machine published in
 //Practical UML Statecharts in C++
 //Miro Samek
 //2nd Edition

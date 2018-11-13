@@ -11,12 +11,12 @@ void MessageTracker::clear()
     m_messages.clear();
 }
 
-int MessageTracker::size() const
+size_t MessageTracker::size() const
 {
     return m_messages.size();
 }
 
-std::string MessageTracker::at(int i) const
+std::string MessageTracker::at(size_t i) const
 {
     return m_messages.at(i);
 }
@@ -44,7 +44,8 @@ MessageTracker &operator<<(MessageTracker &stream, const std::string &message)
 std::ostream &operator <<(std::ostream &ostr, const MessageTracker &t)
 {
     const std::vector<std::string> &messages = t.all();
-    for(int i=0; i< messages.size(); i++){
+    for(size_t i=0; i< messages.size(); i++){
         ostr << messages.at(i) << " ";
     }
+    return ostr;
 }

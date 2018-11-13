@@ -11,8 +11,8 @@ class MessageTracker
 public:
     void add(const std::string &message);
     void clear();
-    int size() const;
-    std::string at(int i) const;
+    size_t size() const;
+    std::string at(size_t i) const;
     const std::vector<std::string> &all() const;
     bool operator == (const MessageTracker &other) const;
 
