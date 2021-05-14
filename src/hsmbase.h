@@ -54,11 +54,16 @@ class HsmBase
 public:
     HsmBase()
         : m_state(0)
+        , m_callNode(NULL)
         , m_reason(INIT)
         , m_nextIndex(2)  //2 places reserved for root and superroot
+        , m_targetIndex(-1)
         , m_transitionSeen(false)
+        , m_handled(false)
         , m_rootSet(false)
         , m_started(false)
+        , m_derivedThis(NULL)
+
     {
         m_nodes[0].hierarchy=-1;  //super root
         m_nodes[1].hierarchy=0;   //root
@@ -147,9 +152,8 @@ private:
 
     int find(DerivedMethod method);
 
-    ///TODO intialize all members in constructor
+
     int m_state;  //index of current state ->m_nodes
-    //Node *m_transitionFrom;
     Nodes m_up;
     Nodes m_down;
     Node *m_callNode;
