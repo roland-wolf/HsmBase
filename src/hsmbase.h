@@ -53,11 +53,11 @@ class HsmBase
 {
 public:
     HsmBase()
-        : m_nextIndex(2)  //2 places reserved for root and superroot
+        : m_state(0)
         , m_reason(INIT)
+        , m_nextIndex(2)  //2 places reserved for root and superroot
         , m_transitionSeen(false)
         , m_rootSet(false)
-        , m_state(0)
         , m_started(false)
     {
         m_nodes[0].hierarchy=-1;  //super root
