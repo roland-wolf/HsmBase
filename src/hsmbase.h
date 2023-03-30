@@ -54,7 +54,7 @@ class HsmBase
 public:
     HsmBase()
         : m_state(0)
-        , m_callNode(NULL)
+        , m_callNode(0)  // nullptr
         , m_reason(INIT)
         , m_nextIndex(2)  //2 places reserved for root and superroot
         , m_targetIndex(-1)
@@ -62,7 +62,7 @@ public:
         , m_handled(false)
         , m_rootSet(false)
         , m_started(false)
-        , m_derivedThis(NULL)
+        , m_derivedThis(0)  // nullptr
 
     {
         m_nodes[0].hierarchy=-1;  //super root
@@ -100,22 +100,16 @@ public:
         Node *initTarget;
     };
 
-    void processEvent(const EventType *event);
-    void writeTrace(DerivedMethod targetState);  //from current State to target Trace
-    void start();
+
     void setRoot(DerivedMethod meth);
-    int stateId(){return m_state;}
-
-    void initStatemachine(DerivedMethod target, DerivedMethod initialMethod =0);
-
-
-    void terminate(){  m_started= false;  }
-
-    void dummy(const EventType *ev){}
-
-    bool addInit(DerivedMethod meth, DerivedMethod target);
-    int methodToIndex(DerivedMethod meth);
     int addChildState(DerivedMethod parentMeth, DerivedMethod child);
+    bool addInit(DerivedMethod meth, DerivedMethod target);
+    void initStatemachine(DerivedMethod target, DerivedMethod initialMethod =0);
+    void start();
+    void processEvent(const EventType *event);
+    int stateId(){return m_state;}
+    int methodToIndex(DerivedMethod meth);
+    void terminate(){  m_started= false;  }    
 
 protected:
     const Reason reason()  {   return m_reason;  }
@@ -123,7 +117,8 @@ protected:
     void handled()    {  m_handled = true;  }
 
 private:
-
+    void writeTrace(DerivedMethod targetState);  //from current State to target Trace
+    void dummy(const EventType *ev){}
     void writeInitTrace(int root, int target);
     void processInits(Node *node, const EventType *event);
     void callInits(Node *currentNode, const EventType *ev);

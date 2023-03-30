@@ -1,5 +1,5 @@
 project(HsmBase)
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.12)
 
 option(WITH_TEST "build with unit test" OFF)
 
